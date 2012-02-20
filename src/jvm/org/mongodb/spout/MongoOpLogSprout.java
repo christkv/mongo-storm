@@ -138,6 +138,13 @@ public class MongoOpLogSprout implements IRichSpout {
             String operation = object.get("op").toString();
             // Check if it's a i/d/u operation and push the data
             if(operation.equals("i") || operation.equals("d") || operation.equals("u")) {
+                if(LOG.isInfoEnabled()) LOG.info(object.toString());
+
+                // Verify if it's the correct namespace
+                if(!namespace.equals(object.get("ns").toString())) {
+                    return;
+                }
+
                 // If we have a fromTimestamp check if we are newer than that
                 if(fromTimestamp > 0 && ((BSONTimestamp)object.get("ts")).getTime() < fromTimestamp) {
                     return;
