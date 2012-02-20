@@ -1,0 +1,3 @@
+# storm-redis-pubsub
+
+A simple storm spout for redis pubsub
