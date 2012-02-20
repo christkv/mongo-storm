@@ -21,9 +21,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Date: 2/20/12
  * Time: 12:54 PM
  */
-public class MongoOpLogSprout implements IRichSpout {
+public class MongoOpLogSpout implements IRichSpout {
     static final long serialVersionUID = 737015318148636460L;
-    static Logger LOG = Logger.getLogger(MongoOpLogSprout.class);
+    static Logger LOG = Logger.getLogger(MongoOpLogSpout.class);
 
     // Internal state
     private String host;
@@ -45,7 +45,7 @@ public class MongoOpLogSprout implements IRichSpout {
     // Handles the incoming messages
     private LinkedBlockingQueue<DBObject> queue;
 
-    public MongoOpLogSprout(String host, int port, String namespace, LinkedHashMap<String, MongoObjectGrabber> fields) {
+    public MongoOpLogSpout(String host, int port, String namespace, LinkedHashMap<String, MongoObjectGrabber> fields) {
         this.host = host;
         this.port = port;
         this.namespace = namespace;
@@ -53,7 +53,7 @@ public class MongoOpLogSprout implements IRichSpout {
         this.fromTimestamp = 0;
     }
 
-    public MongoOpLogSprout(String host, int port, String namespace, LinkedHashMap<String, MongoObjectGrabber> fields, int fromTimestamp) {
+    public MongoOpLogSpout(String host, int port, String namespace, LinkedHashMap<String, MongoObjectGrabber> fields, int fromTimestamp) {
         this.host = host;
         this.port = port;
         this.namespace = namespace;

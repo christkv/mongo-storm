@@ -11,7 +11,7 @@ import com.mongodb.*;
 import org.bson.BSONObject;
 import org.junit.Test;
 import org.mongodb.MongoObjectGrabber;
-import org.mongodb.spout.MongoOpLogSprout;
+import org.mongodb.spout.MongoOpLogSpout;
 import backtype.storm.topology.IBasicBolt;
 
 import java.io.Serializable;
@@ -149,7 +149,7 @@ public class SimpleAggregatorTest implements Serializable {
         });
 
         // Set the spout
-        builder.setSpout("mongodb", new MongoOpLogSprout("localhost", 27017, "storm_mongospout_test.aggregation", fields), 1);
+        builder.setSpout("mongodb", new MongoOpLogSpout("localhost", 27017, "storm_mongospout_test.aggregation", fields), 1);
         // Add a bolt
         builder.setBolt("sum", new Summarizer(), 1).allGrouping("mongodb");
 
