@@ -1,4 +1,4 @@
-package yieldbot.storm.spout;
+package org.mongodb.spout;
 
 import static backtype.storm.utils.Utils.tuple;
 
