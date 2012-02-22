@@ -9,9 +9,11 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
 import com.mongodb.*;
 import org.bson.BSONObject;
+import org.bson.types.BSONTimestamp;
 import org.junit.Test;
 import org.mongodb.MongoObjectGrabber;
 import org.mongodb.spout.MongoOpLogSpout;
+import org.mongodb.spout.MongoSpoutBase;
 import backtype.storm.topology.IBasicBolt;
 
 import java.io.Serializable;
@@ -58,9 +60,9 @@ class Inserter implements Runnable {
                 BasicDBObject object = new BasicDBObject();
                 object.put("a", i);
                 // Insert the object
-                collection.insert(object);
+                collection.insert(object, WriteConcern.SAFE);
+//                System.out.println("--------------------------------------------------- inserted record");
             }
-
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -82,7 +84,7 @@ class Summarizer implements IBasicBolt {
         this.sum = this.sum + tuple.getIntegerByField("a");
         this.numberOfRecords = this.numberOfRecords + 1;
 
-        System.out.println("================================ sum :: " + sum);
+        System.out.println("================================ " + tuple.getIntegerByField("a") + " - sum :: " + sum);
 
         // Create tuple list
         List<Object> tuples = new ArrayList<Object>();
@@ -105,13 +107,28 @@ class Summarizer implements IBasicBolt {
 public class SimpleAggregatorTest implements Serializable {
 
     @Test
-    public void simpleAggregator() {
+    public void simpleAggregator() throws UnknownHostException {
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
         Inserter inserter = new Inserter(latch);
         // Runs inserts in a thread
         new Thread(inserter).start();
+
+        // Query to filter
+        DBObject query = null;
+
+        // Connect to the db and find the current last timestamp
+        Mongo mongo = new Mongo("localhost", 27017);
+        DB db = mongo.getDB("local");
+        DBCursor cursor = db.getCollection("oplog.$main").find().sort(new BasicDBObject("$natural", -1)).limit(1);
+        if(cursor.hasNext()) {
+            // Get the next object
+            DBObject object = cursor.next();
+            // Build the query
+            query = new BasicDBObject("ts", new BasicDBObject("$gt", object.get("ts")));
+            System.out.println(query.toString());
+        }
 
         // Build a topology
         TopologyBuilder builder = new TopologyBuilder();
@@ -149,7 +166,7 @@ public class SimpleAggregatorTest implements Serializable {
         });
 
         // Set the spout
-        builder.setSpout("mongodb", new MongoOpLogSpout("localhost", 27017, "storm_mongospout_test.aggregation", fields), 1);
+        builder.setSpout("mongodb", new MongoOpLogSpout("mongodb://127.0.0.1:27017", query, "storm_mongospout_test.aggregation", fields), 1);
         // Add a bolt
         builder.setBolt("sum", new Summarizer(), 1).allGrouping("mongodb");
 
