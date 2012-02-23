@@ -4,7 +4,6 @@ import com.mongodb.DBObject;
 import org.bson.BSONObject;
 import org.mongodb.MongoObjectGrabber;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class MongoOpLogSpout extends  MongoSpoutBase {    
@@ -29,21 +28,21 @@ public class MongoOpLogSpout extends  MongoSpoutBase {
         this.filterByNamespace = filterByNamespace;
     }
 
-    public MongoOpLogSpout(String url, LinkedHashMap<String, MongoObjectGrabber> fields) {
-        super(url, "local", collectionNames, null, fields);
+    public MongoOpLogSpout(String url, MongoObjectGrabber mapper) {
+        super(url, "local", collectionNames, null, mapper);
     }
 
-    public MongoOpLogSpout(String url, DBObject query, LinkedHashMap<String, MongoObjectGrabber> fields) {
-        super(url, "local", collectionNames, query, fields);
+    public MongoOpLogSpout(String url, DBObject query, MongoObjectGrabber mapper) {
+        super(url, "local", collectionNames, query, mapper);
     }
 
-    public MongoOpLogSpout(String url, String filterByNamespace, LinkedHashMap<String, MongoObjectGrabber> fields) {
-        super(url, "local", collectionNames, null, fields);
+    public MongoOpLogSpout(String url, String filterByNamespace, MongoObjectGrabber mapper) {
+        super(url, "local", collectionNames, null, mapper);
         this.filterByNamespace = filterByNamespace;
     }
 
-    public MongoOpLogSpout(String url, DBObject query, String filterByNamespace, LinkedHashMap<String, MongoObjectGrabber> fields) {
-        super(url, "local", collectionNames, query, fields);
+    public MongoOpLogSpout(String url, DBObject query, String filterByNamespace, MongoObjectGrabber mapper) {
+        super(url, "local", collectionNames, query, mapper);
         this.filterByNamespace = filterByNamespace;
     }
 
@@ -62,8 +61,8 @@ public class MongoOpLogSpout extends  MongoSpoutBase {
                     return;
                 }
 
-                // Map the object to the tuples
-                List<Object> tuples = mapObjectToTuples(object);
+                // Map the object to a tuple
+                List<Object> tuples = this.mapper.map(object);
 
                 // Contains the objectID
                 String objectId = null;

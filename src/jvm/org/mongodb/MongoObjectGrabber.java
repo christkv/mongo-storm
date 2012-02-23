@@ -3,15 +3,14 @@ package org.mongodb;
 import com.mongodb.DBObject;
 
 import java.io.Serializable;
+import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: christiankvalheim
- * Date: 2/20/12
- * Time: 4:51 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class MongoObjectGrabber implements Serializable {
+
+    private static final long serialVersionUID = 7265794696380763567L;
+
+    public abstract List<Object> map(DBObject object);
     
-    public abstract Object grab(DBObject object);
+    public abstract String[] fields();
+
 }
