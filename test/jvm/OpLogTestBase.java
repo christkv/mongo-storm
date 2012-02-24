@@ -14,9 +14,13 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 class Inserter implements Runnable {
+    private String dbName;
+    private String collectionName;
     private CountDownLatch latch;
 
-    Inserter(CountDownLatch latch) {
+    Inserter(String dbName, String collectionName, CountDownLatch latch) {
+        this.dbName = dbName;
+        this.collectionName = collectionName;
         this.latch = latch;
     }
 
@@ -28,11 +32,9 @@ class Inserter implements Runnable {
             // Open connection
             mongo = new Mongo("localhost", 27017);
             // Fetch the local db
-            DB db = mongo.getDB("storm_mongospout_test");
-            // Drop the db for the test
-            db.dropDatabase();
+            DB db = mongo.getDB(dbName);
             // Holds our collection for the oplog
-            DBCollection collection = db.getCollection("aggregation");
+            DBCollection collection = db.getCollection(collectionName);
             // Now insert a bunch of docs once we are ready
             while(latch.getCount() != 0) {
                 try {

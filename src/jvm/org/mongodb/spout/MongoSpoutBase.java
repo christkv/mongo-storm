@@ -20,10 +20,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 public abstract class MongoSpoutBase implements IRichSpout {
-    static final long serialVersionUID = 737015318148636460L;
     static Logger LOG = Logger.getLogger(MongoSpoutBase.class);
-    protected static MongoObjectGrabber wholeDocumentMapper = null;
 
+    protected static MongoObjectGrabber wholeDocumentMapper = null;
     // Hard coded static mapper for whole document map
     static {
         wholeDocumentMapper = new MongoObjectGrabber() {

@@ -1,12 +1,18 @@
 package org.mongodb.spout;
 
 import com.mongodb.DBObject;
+import org.apache.log4j.Logger;
 import org.bson.BSONObject;
 import org.mongodb.MongoObjectGrabber;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class MongoOpLogSpout extends  MongoSpoutBase {    
+public class MongoOpLogSpout extends MongoSpoutBase implements Serializable {
+
+    private static final long serialVersionUID = 5498284114575395939L;
+    static Logger LOG = Logger.getLogger(MongoOpLogSpout.class);
+
     private static String[] collectionNames = {"oplog.$main", "oplog.rs"};
     private String filterByNamespace;
 

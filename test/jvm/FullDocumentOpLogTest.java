@@ -29,7 +29,7 @@ public class FullDocumentOpLogTest extends OpLogTestBase {
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
-        Inserter inserter = new Inserter(latch);
+        Inserter inserter = new Inserter("storm_mongospout_test", "aggregation", latch);
         // Runs inserts in a thread
         new Thread(inserter).start();
 
@@ -102,7 +102,7 @@ public class FullDocumentOpLogTest extends OpLogTestBase {
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
-        Inserter inserter = new Inserter(latch);
+        Inserter inserter = new Inserter("storm_mongospout_test", "aggregation", latch);
         // Runs inserts in a thread
         new Thread(inserter).start();
 

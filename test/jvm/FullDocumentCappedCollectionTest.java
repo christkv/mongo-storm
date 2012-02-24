@@ -1,25 +1,62 @@
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.topology.IBasicBolt;
+import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.mongodb.*;
-import org.bson.BSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.mongodb.MongoObjectGrabber;
 import org.mongodb.StormMongoObjectGrabber;
 import org.mongodb.UpdateQueryCreator;
 import org.mongodb.bolt.MongoInsertBolt;
 import org.mongodb.bolt.MongoUpdateBolt;
-import org.mongodb.spout.MongoOpLogSpout;
+import org.mongodb.spout.MongoCappedCollectionSpout;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
+// Bolt summarising numbers
+class FullDocumentCappedSummarizer implements IBasicBolt {
+    private int sum = 0;
+    private int numberOfRecords = 0;
+
+    @Override
+    public void prepare(Map map, TopologyContext topologyContext) {}
+
+    @Override
+    public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
+        // Object
+        DBObject document = (DBObject) tuple.getValueByField("document");
+        // Count number of records
+        this.numberOfRecords = numberOfRecords + 1;
+        // Add to sum
+        this.sum = this.sum + (Integer)document.get("a");
+        // Create tuple list
+        List<Object> tuples = new ArrayList<Object>();
+        // Add sum as tuple
+        tuples.add(this.sum);
+        // Emit transformed tuple
+        basicOutputCollector.emit(tuples);
+    }
+
+    @Override
+    public void cleanup() {}
+
+    @Override
+    public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        declarer.declare(new Fields("sum"));
+    }
+}
+
+public class FullDocumentCappedCollectionTest extends OpLogTestBase {
 
     @Before
     public void setUp() throws UnknownHostException {
@@ -30,6 +67,10 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
     @Test
     public void aggregateOpLogFieldAndUpdateDocumentInMongoDB() throws UnknownHostException {
         Mongo mongo = new Mongo("localhost", 27017);
+        // Get db
+        DB db = mongo.getDB("storm_mongospout_test");
+        // Create a capped collection
+        db.createCollection("aggregation", new BasicDBObject("capped", true).append("size", 100000));
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
@@ -37,39 +78,8 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
         // Runs inserts in a thread
         new Thread(inserter).start();
 
-        // Query to filter
-        DBObject query = findLastOpLogEntry(mongo);
-
         // Build a topology
         TopologyBuilder builder = new TopologyBuilder();
-
-        // Map the mongodb object to a tuple
-        MongoObjectGrabber mongoMapper = new MongoObjectGrabber() {
-            @Override
-            public List<Object> map(DBObject object) {
-                List<Object> tuple = new ArrayList<Object>();
-
-                // Add the op
-                tuple.add(object.get("op").toString());
-
-                // Add the id
-                if(object.get("op").toString().equals("i") || object.get("op").toString().equals("d")) {
-                    tuple.add(((BSONObject)object.get("o")).get("_id").toString());
-                } else {
-                    tuple.add(((BSONObject)object.get("o2")).get("_id").toString());
-                }
-
-                // Add the a variable
-                tuple.add(((BSONObject)object.get("o")).get("a"));
-                // Return the mapped object
-                return tuple;
-            }
-
-            @Override
-            public String[] fields() {
-                return new String[]{"o", "_id", "a"};
-            }
-        };
 
         // The update query
         UpdateQueryCreator updateQuery = new UpdateQueryCreator() {
@@ -87,12 +97,15 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
             }
         };
 
+        // Query to filter
+        DBObject query = new BasicDBObject("a", new BasicDBObject("$gt", 50));
+
         // Create a mongo bolt
         MongoUpdateBolt mongoSaveBolt = new MongoUpdateBolt("mongodb://127.0.0.1:27017/storm_mongospout_test", "stormoutputcollection", updateQuery, mapper, WriteConcern.NONE);
         // Set the spout
-        builder.setSpout("mongodb", new MongoOpLogSpout("mongodb://127.0.0.1:27017", query, "storm_mongospout_test.aggregation", mongoMapper), 1);
+        builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017", "storm_mongospout_test", "aggregation", query), 1);
         // Add a bolt
-        builder.setBolt("sum", new Summarizer(), 1).allGrouping("mongodb");
+        builder.setBolt("sum", new FullDocumentCappedSummarizer(), 1).allGrouping("mongodb");
         builder.setBolt("mongo", mongoSaveBolt, 1).allGrouping("sum");
 
         // Set debug config
@@ -114,7 +127,8 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
         // Keep checking until done
         while(!done) {
             DBObject result = collection.findOne(new BasicDBObject("aggregation_doc", "summary"));
-            if(result != null && ((Integer)result.get("sum")).intValue() == 4950) {
+
+            if(result != null && ((Integer)result.get("sum")).intValue() == 3675) {
                 done = true;
             } else {
                 try {
@@ -131,6 +145,10 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
     @Test
     public void aggregateOpLogFieldAndInsertADocumentPrResultInMongoDB() throws UnknownHostException {
         Mongo mongo = new Mongo("localhost", 27017);
+        // Get db
+        DB db = mongo.getDB("storm_mongospout_test");
+        // Create a capped collection
+        db.createCollection("aggregation", new BasicDBObject("capped", true).append("size", 100000));
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
@@ -138,39 +156,8 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
         // Runs inserts in a thread
         new Thread(inserter).start();
 
-        // Query to filter
-        DBObject query = findLastOpLogEntry(mongo);
-
         // Build a topology
         TopologyBuilder builder = new TopologyBuilder();
-
-        // Map the mongodb object to a tuple
-        MongoObjectGrabber mongoMapper = new MongoObjectGrabber() {
-            @Override
-            public List<Object> map(DBObject object) {
-                List<Object> tuple = new ArrayList<Object>();
-
-                // Add the op
-                tuple.add(object.get("op").toString());
-
-                // Add the id
-                if(object.get("op").toString().equals("i") || object.get("op").toString().equals("d")) {
-                    tuple.add(((BSONObject)object.get("o")).get("_id").toString());
-                } else {
-                    tuple.add(((BSONObject)object.get("o2")).get("_id").toString());
-                }
-
-                // Add the a variable
-                tuple.add(((BSONObject)object.get("o")).get("a"));
-                // Return the mapped object
-                return tuple;
-            }
-
-            @Override
-            public String[] fields() {
-                return new String[]{"o", "_id", "a"};
-            }
-        };
 
         // Field mapper
         StormMongoObjectGrabber mapper = new StormMongoObjectGrabber() {
@@ -183,12 +170,15 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
             }
         };
 
+        // Query to filter
+        DBObject query = new BasicDBObject("a", new BasicDBObject("$gt", 50));
+
         // Create a mongo bolt
         MongoInsertBolt mongoInserBolt = new MongoInsertBolt("mongodb://127.0.0.1:27017/storm_mongospout_test", "stormoutputcollection", mapper, WriteConcern.NONE);
         // Set the spout
-        builder.setSpout("mongodb", new MongoOpLogSpout("mongodb://127.0.0.1:27017", query, "storm_mongospout_test.aggregation", mongoMapper), 1);
+        builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017", "storm_mongospout_test", "aggregation", query), 1);
         // Add a bolt
-        builder.setBolt("sum", new Summarizer(), 1).allGrouping("mongodb");
+        builder.setBolt("sum", new FullDocumentCappedSummarizer(), 1).allGrouping("mongodb");
         builder.setBolt("mongo", mongoInserBolt, 1).allGrouping("sum");
 
         // Set debug config
@@ -209,7 +199,7 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
 
         // Keep checking until done
         while(!done) {
-            if(collection.count() == 100) {
+            if(collection.count() == 49) {
                 done = true;
             } else {
                 try {
