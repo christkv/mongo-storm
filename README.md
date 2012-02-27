@@ -211,7 +211,7 @@ The bolt let's you save tuples to a mongodb database collection, by inserting a 
 The insert MongoDB bolt has the following signature for the constructor.
 
 ```
-MongoInsertBolt(String url, String collectionName, StormMongoObjectGrabber mapper, WriteConcern writeConcern)
+MongoInsertBolt(String url, String collectionName, StormMongoObjectGrabber mapper, WriteConcern writeConcern, boolean inThread)
 ```
 
 The options are
@@ -220,11 +220,12 @@ The options are
 	* collectionName : the name of the capped colletion we wish to spout from
 	* mapper[optional] : an optional mapper instance that maps the object to a tuple list
 	* writeConcern : the write concern for the mongoDB inserts (safe, normal, w) see mongo docs
+	* inThread[optional] :  run the inserts/updates in it's own internal thread
 	
 The update MongoDB bolt has the following signature for the constructor
 
 ```
-MongoUpdateBolt(String url, String collectionName, UpdateQueryCreator updateQueryCreator, StormMongoObjectGrabber mapper, WriteConcern writeConcern)
+MongoUpdateBolt(String url, String collectionName, UpdateQueryCreator updateQueryCreator, StormMongoObjectGrabber mapper, WriteConcern writeConcern, boolean inThread)
 ```
 
 The options are
@@ -234,6 +235,7 @@ The options are
 	* updateQueryCreator : the instance that creates the update statement for MongoDB
 	* mapper : the instance that maps the tuple to the update statement for MongoDB
 	* writeConcern : the write concern for the mongoDB inserts (safe, normal, w) see mongo docs
+	* inThread[optional] :  run the inserts/updates in it's own internal thread
 
 ### A simple insert Bolt example
 This simple example maps a aggregated tuple with a field called sum and inserts a new document for each new sum. It uses **WriteConcern.NONE** doing no safe writes when writing to MongoDB.

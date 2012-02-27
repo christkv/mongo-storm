@@ -5,16 +5,16 @@ import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // We need to handle the actual messages in an internal thread to ensure we never block, so we will be using a non blocking queue between the
 // driver and the db
-class MongoTask implements Callable<Boolean>, Runnable, Serializable {
+class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
     private static final long serialVersionUID = 4440209304544126477L;
-    static Logger LOG = Logger.getLogger(MongoTask.class);
+    static Logger LOG = Logger.getLogger(MongoSpoutTask.class);
 
-    private ConcurrentLinkedQueue<DBObject> queue;
+    private LinkedBlockingQueue<DBObject> queue;
     private Mongo mongo;
     private DB db;
     private DBCollection collection;
@@ -30,7 +30,7 @@ class MongoTask implements Callable<Boolean>, Runnable, Serializable {
         running.set(false);
     }
 
-    public MongoTask(ConcurrentLinkedQueue<DBObject> queue, Mongo mongo, DB db, String[] collectionNames, DBObject query) {
+    public MongoSpoutTask(LinkedBlockingQueue<DBObject> queue, Mongo mongo, DB db, String[] collectionNames, DBObject query) {
         this.queue = queue;
         this.mongo = mongo;
         this.db = db;

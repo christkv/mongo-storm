@@ -174,7 +174,7 @@ public class FullDocumentCappedCollectionTest extends OpLogTestBase {
         DBObject query = new BasicDBObject("a", new BasicDBObject("$gt", 50));
 
         // Create a mongo bolt
-        MongoInsertBolt mongoInserBolt = new MongoInsertBolt("mongodb://127.0.0.1:27017/storm_mongospout_test", "stormoutputcollection", mapper, WriteConcern.NONE);
+        MongoInsertBolt mongoInserBolt = new MongoInsertBolt("mongodb://127.0.0.1:27017/storm_mongospout_test", "stormoutputcollection", mapper, WriteConcern.NONE, false);
         // Set the spout
         builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017/storm_mongospout_test", "aggregation", query), 1);
         // Add a bolt
@@ -200,6 +200,7 @@ public class FullDocumentCappedCollectionTest extends OpLogTestBase {
         // Keep checking until done
         while(!done) {
             if(collection.count() == 49) {
+                System.out.println("========================================== count :: " + collection.count());
                 done = true;
             } else {
                 try {

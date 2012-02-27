@@ -16,8 +16,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class MongoSpoutBase implements IRichSpout {
     static Logger LOG = Logger.getLogger(MongoSpoutBase.class);
@@ -52,9 +52,9 @@ public abstract class MongoSpoutBase implements IRichSpout {
     protected SpoutOutputCollector collector;
 
     // Handles the incoming messages
-    protected ConcurrentLinkedQueue<DBObject> queue = new ConcurrentLinkedQueue<DBObject>();
+    protected LinkedBlockingQueue<DBObject> queue = new LinkedBlockingQueue<DBObject>(10000);
     private String url;
-    private MongoTask task;
+    private MongoSpoutTask spoutTask;
     private ExecutorService threadExecutor;
     private String[] collectionNames;
 
@@ -106,15 +106,15 @@ public abstract class MongoSpoutBase implements IRichSpout {
         }
 
         // Set up an executor
-        this.task = new MongoTask(this.queue, mongo, db, this.collectionNames, this.query);
+        this.spoutTask = new MongoSpoutTask(this.queue, mongo, db, this.collectionNames, this.query);
         // Start thread
-        Thread thread = new Thread(this.task);
+        Thread thread = new Thread(this.spoutTask);
         thread.start();
     }
 
     @Override
     public void close() {
-        this.task.stopThread();
+        this.spoutTask.stopThread();
     }
 
     protected abstract void processNextTuple();

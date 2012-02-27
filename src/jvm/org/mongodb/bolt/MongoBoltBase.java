@@ -21,8 +21,8 @@ public abstract class MongoBoltBase implements IRichBolt {
     protected OutputCollector outputCollector;
 
     // Constructor arguments
-    private String url;
-    private String collectionName;
+    protected String url;
+    protected String collectionName;
     protected StormMongoObjectGrabber mapper;
     protected WriteConcern writeConcern;
 
