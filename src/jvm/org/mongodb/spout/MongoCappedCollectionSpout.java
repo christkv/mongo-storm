@@ -14,20 +14,20 @@ public class MongoCappedCollectionSpout extends MongoSpoutBase implements Serial
 
     static Logger LOG = Logger.getLogger(MongoCappedCollectionSpout.class);
 
-    public MongoCappedCollectionSpout(String url, String dbName, String collectionName) {
-        super(url, dbName, new String[] {collectionName}, null, null);
+    public MongoCappedCollectionSpout(String url, String collectionName) {
+        super(url, null, new String[] {collectionName}, null, null);
     }
 
-    public MongoCappedCollectionSpout(String url, String dbName, String collectionName, MongoObjectGrabber mapper) {
-        super(url, dbName, new String[] {collectionName}, null, mapper);
+    public MongoCappedCollectionSpout(String url, String collectionName, MongoObjectGrabber mapper) {
+        super(url, null, new String[] {collectionName}, null, mapper);
     }
 
-    public MongoCappedCollectionSpout(String url, String dbName, String collectionName, DBObject query) {
-        super(url, dbName, new String[] {collectionName}, query, null);
+    public MongoCappedCollectionSpout(String url, String collectionName, DBObject query) {
+        super(url, null, new String[] {collectionName}, query, null);
     }
 
-    public MongoCappedCollectionSpout(String url, String dbName, String collectionName, DBObject query, MongoObjectGrabber mapper) {
-        super(url, dbName, new String[] {collectionName}, query, mapper);
+    public MongoCappedCollectionSpout(String url, String collectionName, DBObject query, MongoObjectGrabber mapper) {
+        super(url, null, new String[] {collectionName}, query, mapper);
     }
 
     @Override

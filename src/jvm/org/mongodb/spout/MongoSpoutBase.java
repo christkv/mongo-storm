@@ -93,7 +93,7 @@ public abstract class MongoSpoutBase implements IRichSpout {
             // Create mongo instance
             mongo = new Mongo();
             // Get the db the user wants
-            db = mongo.getDB(this.dbName);
+            db = mongo.getDB(this.dbName == null ? uri.getDatabase() : this.dbName);
             // If we need to authenticate do it
             if(uri.getUsername() != null) {
                 db.authenticate(uri.getUsername(), uri.getPassword());

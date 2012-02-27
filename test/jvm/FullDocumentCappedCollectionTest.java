@@ -103,7 +103,7 @@ public class FullDocumentCappedCollectionTest extends OpLogTestBase {
         // Create a mongo bolt
         MongoUpdateBolt mongoSaveBolt = new MongoUpdateBolt("mongodb://127.0.0.1:27017/storm_mongospout_test", "stormoutputcollection", updateQuery, mapper, WriteConcern.NONE);
         // Set the spout
-        builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017", "storm_mongospout_test", "aggregation", query), 1);
+        builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017/storm_mongospout_test", "aggregation", query), 1);
         // Add a bolt
         builder.setBolt("sum", new FullDocumentCappedSummarizer(), 1).allGrouping("mongodb");
         builder.setBolt("mongo", mongoSaveBolt, 1).allGrouping("sum");
@@ -176,7 +176,7 @@ public class FullDocumentCappedCollectionTest extends OpLogTestBase {
         // Create a mongo bolt
         MongoInsertBolt mongoInserBolt = new MongoInsertBolt("mongodb://127.0.0.1:27017/storm_mongospout_test", "stormoutputcollection", mapper, WriteConcern.NONE);
         // Set the spout
-        builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017", "storm_mongospout_test", "aggregation", query), 1);
+        builder.setSpout("mongodb", new MongoCappedCollectionSpout("mongodb://127.0.0.1:27017/storm_mongospout_test", "aggregation", query), 1);
         // Add a bolt
         builder.setBolt("sum", new FullDocumentCappedSummarizer(), 1).allGrouping("mongodb");
         builder.setBolt("mongo", mongoInserBolt, 1).allGrouping("sum");
