@@ -2,7 +2,7 @@ package org.mongodb.bolt;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.IRichBolt;
+import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import com.mongodb.*;
@@ -12,7 +12,7 @@ import org.mongodb.StormMongoObjectGrabber;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-public abstract class MongoBoltBase implements IRichBolt {
+public abstract class MongoBoltBase extends BaseRichBolt {
     static Logger LOG = Logger.getLogger(MongoBoltBase.class);
 
     // Bolt runtime objects
