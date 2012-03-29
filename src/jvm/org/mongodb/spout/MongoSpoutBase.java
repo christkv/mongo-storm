@@ -2,7 +2,7 @@ package org.mongodb.spout;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.IRichSpout;
+import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import com.mongodb.DB;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public abstract class MongoSpoutBase implements IRichSpout {
+public abstract class MongoSpoutBase extends BaseRichSpout {
     static Logger LOG = Logger.getLogger(MongoSpoutBase.class);
 
     protected static MongoObjectGrabber wholeDocumentMapper = null;
@@ -64,11 +64,6 @@ public abstract class MongoSpoutBase implements IRichSpout {
         this.collectionNames = collectionNames;
         this.query = query;
         this.mapper = mapper == null ? wholeDocumentMapper : mapper;
-    }
-
-    @Override
-    public boolean isDistributed() {
-        return false;
     }
 
     @Override
