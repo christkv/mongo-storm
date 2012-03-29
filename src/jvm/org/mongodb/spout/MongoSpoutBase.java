@@ -84,29 +84,8 @@ public abstract class MongoSpoutBase implements IRichSpout {
         this.context = context;
         this.collector = collector;
 
-        Mongo mongo = null;
-        DB db = null;
-
-        // Open the db connection
-        try {
-            MongoURI uri = new MongoURI(this.url);
-            // Create mongo instance
-            mongo = new Mongo();
-            // Get the db the user wants
-            db = mongo.getDB(this.dbName == null ? uri.getDatabase() : this.dbName);
-            // If we need to authenticate do it
-            if(uri.getUsername() != null) {
-                db.authenticate(uri.getUsername(), uri.getPassword());
-            }
-        } catch (UnknownHostException e) {
-            // Log the error
-            LOG.error("Unknown host for Mongo DB", e);
-            // Die fast
-            throw new RuntimeException(e);
-        }
-
         // Set up an executor
-        this.spoutTask = new MongoSpoutTask(this.queue, mongo, db, this.collectionNames, this.query);
+        this.spoutTask = new MongoSpoutTask(this.queue, this.url, this.dbName, this.collectionNames, this.query);
         // Start thread
         Thread thread = new Thread(this.spoutTask);
         thread.start();
@@ -114,6 +93,7 @@ public abstract class MongoSpoutBase implements IRichSpout {
 
     @Override
     public void close() {
+        // Stop the thread
         this.spoutTask.stopThread();
     }
 

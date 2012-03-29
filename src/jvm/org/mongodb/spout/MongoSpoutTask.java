@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,16 +27,36 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
     private String[] collectionNames;
     private DBObject query;
 
-    public void stopThread() {
-        running.set(false);
+    public MongoSpoutTask(LinkedBlockingQueue<DBObject> queue, String url, String dbName, String[] collectionNames, DBObject query) {
+        this.queue = queue;
+        this.collectionNames = collectionNames;
+        this.query = query;
+
+        initializeMongo(url, dbName);
     }
 
-    public MongoSpoutTask(LinkedBlockingQueue<DBObject> queue, Mongo mongo, DB db, String[] collectionNames, DBObject query) {
-        this.queue = queue;
-        this.mongo = mongo;
-        this.db = db;
-        this.collectionNames = collectionNames;
-        this.query = query == null ? new BasicDBObject() : query;
+    private void initializeMongo(String url, String dbName) {
+        // Open the db connection
+        try {
+            MongoURI uri = new MongoURI(url);
+            // Create mongo instance
+            mongo = new Mongo();
+            // Get the db the user wants
+            db = mongo.getDB(dbName == null ? uri.getDatabase() : dbName);
+            // If we need to authenticate do it
+            if(uri.getUsername() != null) {
+                db.authenticate(uri.getUsername(), uri.getPassword());
+            }
+        } catch (UnknownHostException e) {
+            // Log the error
+            LOG.error("Unknown host for Mongo DB", e);
+            // Die fast
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stopThread() {
+        running.set(false);
     }
 
     @Override
@@ -48,7 +69,8 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
         this.cursor = this.collection.find(query)
                 .sort(new BasicDBObject("$natural", 1))
                 .addOption(Bytes.QUERYOPTION_TAILABLE)
-                .addOption(Bytes.QUERYOPTION_AWAITDATA);
+                .addOption(Bytes.QUERYOPTION_AWAITDATA)
+                .addOption(Bytes.QUERYOPTION_NOTIMEOUT);
 
         // While the thread is set to running
         while(running.get()) {
@@ -66,6 +88,8 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
                 if(running.get()) throw new RuntimeException(e);
             }
         }
+
+        // Close the cursor
 
         // Dummy return
         return true;
@@ -94,7 +118,7 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
         try {
             call();
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.error(e);
         }
     }
 }
