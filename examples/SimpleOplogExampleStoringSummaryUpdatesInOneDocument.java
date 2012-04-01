@@ -211,5 +211,10 @@ public class SimpleOplogExampleStoringSummaryUpdatesInOneDocument {
         public void declareOutputFields(OutputFieldsDeclarer declarer) {
             declarer.declare(new Fields("sum"));
         }
+
+        @Override
+        public Map<String, Object> getComponentConfiguration() {
+            return null;
+        }
     }
 }

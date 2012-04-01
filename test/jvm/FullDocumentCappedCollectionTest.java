@@ -17,10 +17,7 @@ import org.mongodb.bolt.MongoUpdateBolt;
 import org.mongodb.spout.MongoCappedCollectionSpout;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 // Bolt summarising numbers
@@ -53,6 +50,11 @@ class FullDocumentCappedSummarizer implements IBasicBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declare(new Fields("sum"));
+    }
+
+    @Override
+    public Map<String, Object> getComponentConfiguration() {
+        return new HashMap<String, Object>();
     }
 }
 
