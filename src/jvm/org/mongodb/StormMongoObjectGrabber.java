@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 public abstract class StormMongoObjectGrabber implements Serializable {
 
-    private static final long serialVersionUID = 333640560466463063L;
+  private static final long serialVersionUID = 333640560466463063L;
 
-    public abstract DBObject map(DBObject object, Tuple tuple);
+  public abstract DBObject map(DBObject object, Tuple tuple);
 }
