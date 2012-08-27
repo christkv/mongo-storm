@@ -40,7 +40,7 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
     try {
       MongoURI uri = new MongoURI(url);
       // Create mongo instance
-      mongo = new Mongo();
+      mongo = new Mongo(uri);
       // Get the db the user wants
       db = mongo.getDB(dbName == null ? uri.getDatabase() : dbName);
       // If we need to authenticate do it
