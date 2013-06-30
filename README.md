@@ -8,7 +8,7 @@ The Mongo Storm library let's you leverage MongoDB in your Storm toplogies. It i
 ## Capped Collection Spout Examples
 The capped collection signature is as follows, there are other variations as some options are optional such as the query and mapper.
 
-```
+```java
 MongoCappedCollectionSpout(String url, String collectionName, DBObject query, MongoObjectGrabber mapper)
 ```
 The options are
@@ -21,7 +21,7 @@ The options are
 ### A simple capped collection Spout an object mapped to a custom tuple
 This simple example extracts the number of users from document in a capped collection as they arrive come in. Boilercode omited for brevities sake.
 
-````
+```java
 ...
 // Parameters used in the cap
 String url = "mongodb://127.0.0.1:27017/storm_mongospout_test";
@@ -51,14 +51,14 @@ spout = new MongoCappedCollectionSpout(url, collectionName, mongoMapper);
 // Add to the topology
 builder.setSpout(spout, 1);
 …
-````
+```
 
 Two thing to notice in the code that are important. To map fields form an object to a tuple you need to create an instance implementing the **MongoObjectGrabber** and implement the two methods **map** and **fields**. The **map** function actually maps the **DBOject** to a tuple list and the **fields** method lets Storm know what the name of each tuple field is called.
 
 ### A simple capped collection Spout emitting entire documents
 This simple example extracts the number of users from document in a capped collection as they arrive come in. Boilercode omited for brevities sake.
 
-````
+```java
 ...
 // Parameters used in the cap
 String url = "mongodb://127.0.0.1:27017/storm_mongospout_test";
@@ -71,11 +71,11 @@ spout = new MongoCappedCollectionSpout(url, collectionName);
 // Add to the topology
 builder.setSpout(spout, 1);
 …
-````
+```
 
 If you don't provide a **MongoObjectGrabber** instance it will default to emitting the entire document. That means a tuple will be emitted under the name "document". The corresponding mapper would look like this.
 
-````
+```java
 // Map the mongodb object to a tuple
 MongoObjectGrabber mongoMapper = new MongoObjectGrabber() {
   @Override
@@ -92,10 +92,10 @@ MongoObjectGrabber mongoMapper = new MongoObjectGrabber() {
      return new String[]{"document"};
   }
 };
-````
+```
 
 ## Oplog Spout Example
-```
+```java
 MongoOpLogSpout(String url, DBObject query, String filterByNamespace, MongoObjectGrabber mapper)
 ```
 The options are
@@ -110,7 +110,7 @@ The oplog is a special capped collection that replicasets and master-slave confi
 
 It's a little bit different in usage than the Capped collection spout but not by much. The example below shows the usage of the spout starting at the start of the current oplog. It's picking out the operation, the id of the document and age of the user document.
 
-````
+```java
 ...
 // Parameters used in the cap
 String url = "mongodb://127.0.0.1:27017";
@@ -148,12 +148,12 @@ spout = new MongoOpLogSpout(url, filter, mongoMapper);
 // Add to the topology
 builder.setSpout(spout, 1);
 …
-````
+```
 
 ### A simple oplog Spout an object mapped to a custom tuple form the end of the oplog
 The example below shows the usage of the spout starting at the end of the current oplog. It's picking out the operation, the id of the document and age of the user document.
 
-````
+```java
 ...
 // Parameters used in the cap
 String url = "mongodb://127.0.0.1:27017";
@@ -203,14 +203,14 @@ spout = new MongoOpLogSpout(url, query, filter, mongoMapper);
 // Add to the topology
 builder.setSpout(spout, 1);
 …
-````
+```
 
 ## MongoDB Insert/Update Bolt Examples
 The bolt let's you save tuples to a mongodb database collection, by inserting a new document or updating an existing one. You can subclass them to make the passthrough bolts that just save the state of the document before passing it along to other topology processors.
 
 The insert MongoDB bolt has the following signature for the constructor.
 
-```
+```java
 MongoInsertBolt(String url, String collectionName, StormMongoObjectGrabber mapper, WriteConcern writeConcern, boolean inThread)
 ```
 
@@ -224,7 +224,7 @@ The options are
 	
 The update MongoDB bolt has the following signature for the constructor
 
-```
+```java
 MongoUpdateBolt(String url, String collectionName, UpdateQueryCreator updateQueryCreator, StormMongoObjectGrabber mapper, WriteConcern writeConcern, boolean inThread)
 ```
 
@@ -240,7 +240,7 @@ The options are
 ### A simple insert Bolt example
 This simple example maps a aggregated tuple with a field called sum and inserts a new document for each new sum. It uses **WriteConcern.NONE** doing no safe writes when writing to MongoDB.
 
-```
+```java
 // Mongo insert bolt instance
 String url = "mongodb://127.0.0.1:27017/storm_mongospout_test";
 String collectionName = "stormoutputcollection";
@@ -266,7 +266,7 @@ builder.setBolt("mongo", mongoInserBolt, 1).allGrouping("sum");
 ### A simple update Bolt example
 This simple example maps a aggregated tuple with a field called sum and updates an existing document for each new incoming sum. It uses **WriteConcern.NONE** doing no safe writes when writing to MongoDB.
 
-```
+```java
 // Mongo update bolt instance
 String url = "mongodb://127.0.0.1:27017/storm_mongospout_test";
 String collectionName = "stormoutputcollection";
@@ -298,7 +298,7 @@ mongoSaveBolt = new MongoUpdateBolt(url, collectionName, updateQuery, mapper, Wr
 ### A simple passthrough insert Bolt example
 This is a simple example showing how you can extend the insert class to pass the values through as well as save them. Useful if you are saving state in the middle of a topology.
 
-```
+```java
 class ExtendInsertClass extends MongoInsertBolt {
   public ExtendInsertClass(String url, String collectionName, StormMongoObjectGrabber mapper, WriteConcern writeConcern) {
     super(url, collectionName, mapper, writeConcern);
