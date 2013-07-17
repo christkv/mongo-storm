@@ -1,16 +1,22 @@
 package org.mongodb.bolt;
 
+import java.net.UnknownHostException;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.mongodb.StormMongoObjectGrabber;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import com.mongodb.*;
-import org.apache.log4j.Logger;
-import org.mongodb.StormMongoObjectGrabber;
 
-import java.net.UnknownHostException;
-import java.util.Map;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.WriteConcern;
 
 public abstract class MongoBoltBase extends BaseRichBolt {
   static Logger LOG = Logger.getLogger(MongoBoltBase.class);
@@ -27,7 +33,7 @@ public abstract class MongoBoltBase extends BaseRichBolt {
   protected WriteConcern writeConcern;
 
   // Mongo objects
-  protected Mongo mongo;
+  protected MongoClient mongo;
   protected DB db;
   protected DBCollection collection;
 
@@ -47,9 +53,9 @@ public abstract class MongoBoltBase extends BaseRichBolt {
 
     // Attempt to open a db connection
     try {
-      MongoURI uri = new MongoURI(this.url);
+      MongoClientURI uri = new MongoClientURI(this.url);
       // Open the db
-      this.mongo = new Mongo(uri);
+      this.mongo = new MongoClient(uri);
       // Grab the db
       this.db = this.mongo.getDB(uri.getDatabase());
 

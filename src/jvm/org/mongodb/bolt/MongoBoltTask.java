@@ -1,17 +1,19 @@
 package org.mongodb.bolt;
 
-import backtype.storm.tuple.Tuple;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
-import com.mongodb.WriteConcern;
+import java.io.Serializable;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.log4j.Logger;
 import org.mongodb.StormMongoObjectGrabber;
 import org.mongodb.UpdateQueryCreator;
 
-import java.io.Serializable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
+import backtype.storm.tuple.Tuple;
+
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
+import com.mongodb.WriteConcern;
 
 abstract class MongoBoltTask implements Runnable, Serializable {
 
@@ -21,7 +23,7 @@ abstract class MongoBoltTask implements Runnable, Serializable {
 
   // Internal variables
   protected LinkedBlockingQueue<Tuple> queue;
-  protected Mongo mongo;
+  protected MongoClient mongo;
   protected DB db;
   protected UpdateQueryCreator updateQueryCreator;
   protected StormMongoObjectGrabber mapper;
@@ -32,7 +34,7 @@ abstract class MongoBoltTask implements Runnable, Serializable {
     running.set(false);
   }
 
-  public MongoBoltTask(LinkedBlockingQueue<Tuple> queue, Mongo mongo, DB db, DBCollection collection, StormMongoObjectGrabber mapper, WriteConcern writeConcern) {
+  public MongoBoltTask(LinkedBlockingQueue<Tuple> queue, MongoClient mongo, DB db, DBCollection collection, StormMongoObjectGrabber mapper, WriteConcern writeConcern) {
     this.queue = queue;
     this.mongo = mongo;
     this.db = db;
@@ -41,7 +43,7 @@ abstract class MongoBoltTask implements Runnable, Serializable {
     this.writeConcern = writeConcern;
   }
 
-  public MongoBoltTask(LinkedBlockingQueue<Tuple> queue, Mongo mongo, DB db, DBCollection collection, UpdateQueryCreator updateQueryCreator, StormMongoObjectGrabber mapper, WriteConcern writeConcern) {
+  public MongoBoltTask(LinkedBlockingQueue<Tuple> queue, MongoClient mongo, DB db, DBCollection collection, UpdateQueryCreator updateQueryCreator, StormMongoObjectGrabber mapper, WriteConcern writeConcern) {
     this.queue = queue;
     this.mongo = mongo;
     this.db = db;

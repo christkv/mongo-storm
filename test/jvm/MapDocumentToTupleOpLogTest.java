@@ -1,8 +1,9 @@
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.tuple.Tuple;
-import com.mongodb.*;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 import org.bson.BSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,23 +14,29 @@ import org.mongodb.bolt.MongoInsertBolt;
 import org.mongodb.bolt.MongoUpdateBolt;
 import org.mongodb.spout.MongoOpLogSpout;
 
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import backtype.storm.Config;
+import backtype.storm.LocalCluster;
+import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Tuple;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.WriteConcern;
 
 public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
 
     @Before
     public void setUp() throws UnknownHostException {
-        Mongo mongo = new Mongo("localhost", 27017);
+        MongoClient mongo = new MongoClient("localhost", 27017);
         mongo.dropDatabase("storm_mongospout_test");
     }
 
     @Test
     public void aggregateOpLogFieldAndUpdateDocumentInMongoDB() throws UnknownHostException {
-        Mongo mongo = new Mongo("localhost", 27017);
+        MongoClient mongo = new MongoClient("localhost", 27017);
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
@@ -130,7 +137,7 @@ public class MapDocumentToTupleOpLogTest extends OpLogTestBase {
 
     @Test
     public void aggregateOpLogFieldAndInsertADocumentPrResultInMongoDB() throws UnknownHostException {
-        Mongo mongo = new Mongo("localhost", 27017);
+        MongoClient mongo = new MongoClient("localhost", 27017);
         // Signals thread to fire messages
         CountDownLatch latch = new CountDownLatch(1);
         // Wraps the thread
