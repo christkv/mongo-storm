@@ -1,13 +1,21 @@
 package org.mongodb.spout;
 
-import com.mongodb.*;
-import org.apache.log4j.Logger;
-
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.log4j.Logger;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.Bytes;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
 // We need to handle the actual messages in an internal thread to ensure we never block, so we will be using a non blocking queue between the
 // driver and the db
@@ -16,7 +24,7 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
   static Logger LOG = Logger.getLogger(MongoSpoutTask.class);
 
   private LinkedBlockingQueue<DBObject> queue;
-  private Mongo mongo;
+  private MongoClient mongo;
   private DB db;
   private DBCollection collection;
   private DBCursor cursor;
@@ -38,9 +46,9 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
   private void initializeMongo(String url, String dbName) {
     // Open the db connection
     try {
-      MongoURI uri = new MongoURI(url);
-      // Create mongo instance
-      mongo = new Mongo(uri);
+        MongoClientURI uri = new MongoClientURI(url);
+        // Open the db
+        this.mongo = new MongoClient(uri);
       // Get the db the user wants
       db = mongo.getDB(dbName == null ? uri.getDatabase() : dbName);
       // If we need to authenticate do it

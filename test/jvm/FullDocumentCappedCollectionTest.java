@@ -1,3 +1,19 @@
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mongodb.StormMongoObjectGrabber;
+import org.mongodb.UpdateQueryCreator;
+import org.mongodb.bolt.MongoInsertBolt;
+import org.mongodb.bolt.MongoUpdateBolt;
+import org.mongodb.spout.MongoCappedCollectionSpout;
+
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.task.TopologyContext;
@@ -7,18 +23,14 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import com.mongodb.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.mongodb.StormMongoObjectGrabber;
-import org.mongodb.UpdateQueryCreator;
-import org.mongodb.bolt.MongoInsertBolt;
-import org.mongodb.bolt.MongoUpdateBolt;
-import org.mongodb.spout.MongoCappedCollectionSpout;
 
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.WriteConcern;
 
 // Bolt summarising numbers
 class FullDocumentCappedSummarizer implements IBasicBolt {
@@ -62,13 +74,13 @@ public class FullDocumentCappedCollectionTest extends OpLogTestBase {
 
     @Before
     public void setUp() throws UnknownHostException {
-        Mongo mongo = new Mongo("localhost", 27017);
+        MongoClient mongo = new MongoClient("localhost", 27017);
         mongo.dropDatabase("storm_mongospout_test");
     }
 
     @Test
     public void aggregateOpLogFieldAndUpdateDocumentInMongoDB() throws UnknownHostException {
-        Mongo mongo = new Mongo("localhost", 27017);
+        MongoClient mongo = new MongoClient("localhost", 27017);
         // Get db
         DB db = mongo.getDB("storm_mongospout_test");
         // Create a capped collection
@@ -146,7 +158,7 @@ public class FullDocumentCappedCollectionTest extends OpLogTestBase {
 
     @Test
     public void aggregateOpLogFieldAndInsertADocumentPrResultInMongoDB() throws UnknownHostException {
-        Mongo mongo = new Mongo("localhost", 27017);
+        MongoClient mongo = new MongoClient("localhost", 27017);
         // Get db
         DB db = mongo.getDB("storm_mongospout_test");
         // Create a capped collection

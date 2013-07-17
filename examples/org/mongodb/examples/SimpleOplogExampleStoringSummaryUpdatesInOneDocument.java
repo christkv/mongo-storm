@@ -153,7 +153,7 @@ public class SimpleOplogExampleStoringSummaryUpdatesInOneDocument {
     @Override
     public void run() {
       // Initialize the mongo object
-      Mongo mongo;
+      MongoClient mongo;
       try {
         // Open connection
         mongo = new Mongo("localhost", 27017);

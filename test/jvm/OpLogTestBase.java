@@ -1,11 +1,3 @@
-import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.BasicOutputCollector;
-import backtype.storm.topology.IBasicBolt;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Tuple;
-import com.mongodb.*;
-
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -13,6 +5,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+
+import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.topology.IBasicBolt;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Tuple;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.WriteConcern;
 
 class Inserter implements Runnable {
     private String dbName;
@@ -28,10 +35,10 @@ class Inserter implements Runnable {
     @Override
     public void run() {
         // Initialize the mongo object
-        Mongo mongo = null;
+        MongoClient mongo = null;
         try {
             // Open connection
-            mongo = new Mongo("localhost", 27017);
+            mongo = new MongoClient("localhost", 27017);
             // Fetch the local db
             DB db = mongo.getDB(dbName);
             // Holds our collection for the oplog
@@ -141,7 +148,7 @@ class FullDocumentSummarizer implements IBasicBolt {
 
 public class OpLogTestBase implements Serializable {
 
-    protected DBObject findLastOpLogEntry(Mongo mongo) throws UnknownHostException {
+    protected DBObject findLastOpLogEntry(MongoClient mongo) throws UnknownHostException {
         // Connect to the db and find the current last timestamp
         DB db = mongo.getDB("local");
         DBObject query = null;
