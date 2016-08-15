@@ -1,6 +1,6 @@
 package org.mongodb;
 
-import backtype.storm.tuple.Tuple;
+import org.apache.storm.tuple.Tuple;
 import com.mongodb.DBObject;
 
 import java.io.Serializable;

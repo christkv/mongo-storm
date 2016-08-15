@@ -60,7 +60,7 @@ public class MongoOpLogSpout extends MongoSpoutBase implements Serializable {
       String operation = object.get("op").toString();
       // Check if it's a i/d/u operation and push the data
       if (operation.equals("i") || operation.equals("d") || operation.equals("u")) {
-        if (LOG.isInfoEnabled()) LOG.info(object.toString());
+        if (LOG.isDebugEnabled()) LOG.debug(object.toString());
 
         // Verify if it's the correct namespace
         if (this.filterByNamespace != null && !this.filterByNamespace.equals(object.get("ns").toString())) {

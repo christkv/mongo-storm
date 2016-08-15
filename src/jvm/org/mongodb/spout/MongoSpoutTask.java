@@ -71,7 +71,7 @@ class MongoSpoutTask implements Callable<Boolean>, Runnable, Serializable {
             .sort(new BasicDBObject("$natural", 1))
             .addOption(Bytes.QUERYOPTION_TAILABLE)
             .addOption(Bytes.QUERYOPTION_AWAITDATA)
-            .addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+            .addOption(Bytes.QUERYOPTION_NOTIMEOUT).batchSize(10000);
 
     // While the thread is set to running
     while (running.get()) {

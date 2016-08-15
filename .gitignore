@@ -1,9 +1,9 @@
 out/
 .idea/
 .DS_Store
-pom.xml
 *jar
 /lib/
+/target
 /classes/
 .lein-failures
 .lein-deps-sum
