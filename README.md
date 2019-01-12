@@ -1,6 +1,6 @@
 # The Mongo Storm library
 
-The Mongo Storm library let's you leverage MongoDB in your Storm toplogies. It includes two main components.
+The Mongo Storm library let's you leverage MongoDB in your Storm topologies. It includes two main components.
 
 * A spout for the MongoDB oplog and any MongoDB capped collections, that lets you filter down documents to specific touples in case you want to lower the amount of data transmitted from your spout. Alternatively you can emit the entire document. It's threaded and non-blocking.
 * A insert/update bolt that lets you map a tuple either to  a new document or to an existing document in your MongoDB instance.
